@@ -2,6 +2,7 @@ package nodomain.boulderdash;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -68,6 +69,8 @@ public class GameView extends SurfaceView implements Runnable {
         GlobalVariables.ScreenHeight = h;
         GlobalVariables.ScreenWidth = w;
     }
+
+
 
     @Override
     public void run() {

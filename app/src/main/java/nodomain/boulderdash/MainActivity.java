@@ -3,6 +3,7 @@ package nodomain.boulderdash;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Window;
 
 public class MainActivity extends Activity {
@@ -16,8 +17,13 @@ public class MainActivity extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        GlobalVariables.ScreenWidth = displayMetrics.widthPixels;
+        GlobalVariables.ScreenHeight = displayMetrics.heightPixels;
+
         gameView = new GameView(this);
-        gameView.setSystemUiVisibility(GameView.SYSTEM_UI_FLAG_FULLSCREEN);
 
         setContentView(gameView);
     }

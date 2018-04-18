@@ -6,20 +6,32 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.view.MotionEvent;
 
+import java.util.Random;
+
 import nodomain.boulderdash.GlobalVariables;
+import nodomain.boulderdash.gameobjects.Clickable;
+import nodomain.boulderdash.gameobjects.SpriteFont;
+import nodomain.boulderdash.utils.Vector2;
 
 public class MenuScene implements Scene {
 
-    Paint paint;
+    private SpriteFont titleFont;
 
     @Override
     public void InitScene() {
-        paint = new Paint();
-        Typeface typeface = Typeface.createFromAsset(GlobalVariables.Context.getAssets(), "boulderdash.ttf");
-        paint.setTypeface(typeface);
-        paint.setTextSize(30);
-        paint.setColor(Color.GREEN);
-        paint.setTextAlign(Paint.Align.CENTER);
+        titleFont = new SpriteFont("BOULDER DASH",
+                Typeface.createFromAsset(GlobalVariables.Context.getAssets(), "boulderdash.ttf"),
+                Vector2.Center(),
+                Color.GREEN,
+                30f);
+
+        titleFont.setClickListener(new Clickable() {
+            @Override
+            public void OnClick() {
+                Random random = new Random();
+                titleFont.getPaint().setColor(random.nextInt(Color.argb(100, random.nextInt(255), random.nextInt(255), random.nextInt(255))));
+            }
+        });
     }
 
     @Override
@@ -30,7 +42,8 @@ public class MenuScene implements Scene {
     @Override
     public void Draw(Canvas canvas) {
         canvas.drawColor(Color.BLACK);
-        canvas.drawText("BOULDER DASH", GlobalVariables.ScreenWidth / 2, GlobalVariables.ScreenHeight / 2, paint);
+
+        titleFont.Draw(canvas);
     }
 
     @Override
@@ -40,6 +53,13 @@ public class MenuScene implements Scene {
 
     @Override
     public void ReceiveTouchEvent(MotionEvent motionEvent) {
-
+        switch(motionEvent.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                if(Math.abs(titleFont.getPosition().X - motionEvent.getX()) <= 100
+                        && Math.abs(titleFont.getPosition().Y - motionEvent.getY()) <= 100) {
+                    titleFont.OnClick();
+                }
+            }
+        }
     }
 }
