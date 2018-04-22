@@ -38,7 +38,6 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void init(Context context) {
-        GlobalVariables.Context = context;
         sceneManager = SceneManager.GetInstance();
         sceneManager.SetCurrentScene(new MenuScene());
 

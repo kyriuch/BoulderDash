@@ -2,48 +2,67 @@ package nodomain.boulderdash.scenes;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.view.MotionEvent;
 
-import java.util.Random;
+import java.util.ArrayList;
 
-import nodomain.boulderdash.GlobalVariables;
+import nodomain.boulderdash.gameobjects.SpriteText;
 import nodomain.boulderdash.gameobjects.Clickable;
-import nodomain.boulderdash.gameobjects.SpriteFont;
+import nodomain.boulderdash.gameobjects.IGameObject;
+import nodomain.boulderdash.gameobjects.TextButton;
+import nodomain.boulderdash.scenes.gamescene.GameScene;
 import nodomain.boulderdash.utils.Vector2;
 
 public class MenuScene implements Scene {
 
-    private SpriteFont titleFont;
+    private TextButton playGameButton;
+    private SpriteText titleText;
+
+    private ArrayList<IGameObject> gameObjects;
 
     @Override
     public void InitScene() {
-        titleFont = new SpriteFont("BOULDER DASH",
-                Typeface.createFromAsset(GlobalVariables.Context.getAssets(), "boulderdash.ttf"),
-                Vector2.Center(),
-                Color.GREEN,
-                30f);
+        gameObjects = new ArrayList<>();
 
-        titleFont.setClickListener(new Clickable() {
+        // playGameButton
+
+        playGameButton = new TextButton("PLAY GAME", Vector2.Center());
+
+        playGameButton.setClickListener(new Clickable() {
             @Override
             public void OnClick() {
-                Random random = new Random();
-                titleFont.getPaint().setColor(random.nextInt(Color.argb(100, random.nextInt(255), random.nextInt(255), random.nextInt(255))));
+                SceneManager.GetInstance().SetCurrentScene(new GameScene());
             }
         });
+
+        playGameButton.getTextPaint().setColor(Color.BLACK);
+
+        gameObjects.add(playGameButton);
+
+        // titleText
+
+        titleText = new SpriteText("BOULDER DASH", Vector2.Center());
+        titleText.getPosition().Y -= 200;
+        titleText.getPaint().setTextSize(120f);
+
+        gameObjects.add(titleText);
+
     }
 
     @Override
     public void Update() {
-
+        for(IGameObject gameObject : gameObjects) {
+            gameObject.Update();
+        }
     }
 
     @Override
     public void Draw(Canvas canvas) {
         canvas.drawColor(Color.BLACK);
 
-        titleFont.Draw(canvas);
+        for(IGameObject gameObject : gameObjects) {
+            gameObject.Draw(canvas);
+        }
     }
 
     @Override
@@ -55,9 +74,8 @@ public class MenuScene implements Scene {
     public void ReceiveTouchEvent(MotionEvent motionEvent) {
         switch(motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                if(Math.abs(titleFont.getPosition().X - motionEvent.getX()) <= 100
-                        && Math.abs(titleFont.getPosition().Y - motionEvent.getY()) <= 100) {
-                    titleFont.OnClick();
+                if(playGameButton.Intersects((int) motionEvent.getX(), (int) motionEvent.getY())) {
+                    playGameButton.OnClick();
                 }
             }
         }
