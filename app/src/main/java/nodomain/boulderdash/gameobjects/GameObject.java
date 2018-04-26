@@ -1,16 +1,22 @@
 package nodomain.boulderdash.gameobjects;
 
-public abstract class GameObject implements IGameObject
-{
-    private Clickable clickable;
+import android.graphics.Canvas;
 
-    public void OnClick() {
-        if(clickable != null) {
-            clickable.OnClick();
-        }
+import nodomain.boulderdash.utils.Vector2;
+
+public abstract class GameObject {
+
+    protected Vector2 position;
+
+    public void Move(float x) {
+        position.X += x;
     }
 
-    public void setClickListener(Clickable clickable) {
-        this.clickable = clickable;
+    public void Move(float x, float y) {
+        position.X += x;
+        position.Y += y;
     }
+
+    public abstract void Update();
+    public abstract void Draw(Canvas canvas);
 }

@@ -2,22 +2,23 @@ package nodomain.boulderdash;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import nodomain.boulderdash.scenes.MenuScene;
-import nodomain.boulderdash.scenes.SceneManager;
+import nodomain.boulderdash.scenemanagament.SceneManager;
+import nodomain.boulderdash.scenemanagament.scenes.MenuScene;
+import nodomain.boulderdash.utils.Time;
 
 public class GameView extends SurfaceView implements Runnable {
 
     private SurfaceHolder surfaceHolder;
     private Thread gameThread;
-    private SceneManager sceneManager;
 
     private boolean running;
+
+    private SceneManager sceneManager;
 
     public GameView(Context context) {
         super(context);
@@ -38,9 +39,7 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void init(Context context) {
-        sceneManager = SceneManager.GetInstance();
-        sceneManager.SetCurrentScene(new MenuScene());
-
+        sceneManager = SceneManager.getInstance();
         surfaceHolder = getHolder();
     }
 
@@ -75,10 +74,16 @@ public class GameView extends SurfaceView implements Runnable {
     public void run() {
         Canvas canvas;
 
+        Time.LastTime = System.nanoTime();
+        sceneManager.ForceChangeScene(new MenuScene());
+
         while(running) {
             if(surfaceHolder.getSurface().isValid()) {
                 canvas = surfaceHolder.lockCanvas();
                 canvas.save();
+
+                Time.DeltaTime = (System.nanoTime() - Time.LastTime) / 1000000000.0;
+                Time.LastTime = System.nanoTime();
 
                 update();
                 draw(canvas);
@@ -90,14 +95,14 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update() {
-        sceneManager.UpdateScene();
+        sceneManager.Update();
     }
 
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
 
-        sceneManager.DrawScene(canvas);
+        sceneManager.Draw(canvas);
     }
 
     @Override
