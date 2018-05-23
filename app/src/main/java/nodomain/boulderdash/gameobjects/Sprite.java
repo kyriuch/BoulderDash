@@ -16,12 +16,12 @@ import nodomain.boulderdash.utils.Vector2;
 public class Sprite extends GameObject {
 
     private Vector2 position;
-    private int width;
-    private int height;
-    private Rect srcRect;
+    protected int width;
+    protected int height;
+    protected Rect srcRect;
 
-    private Rect destRect;
-    private Paint paint;
+    protected Rect destRect;
+    protected Paint paint;
 
     public Sprite(Vector2 position, int width, int height, Rect srcRect) {
         this.position = position;

@@ -109,6 +109,6 @@ public class GameView extends SurfaceView implements Runnable {
     public boolean onTouchEvent(MotionEvent event) {
         sceneManager.ReceiveTouchEvent(event);
 
-        return super.onTouchEvent(event);
+        return true;
     }
 }

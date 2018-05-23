@@ -52,6 +52,9 @@ public class MainActivity extends Activity {
                 }
             }
         }
+
+        System.out.println(Memory.SpriteSheet.getWidth());
+        System.out.println(Memory.SpriteSheet.getHeight());
     }
 
     private GameView setupGameView() {

@@ -1,4 +1,4 @@
-package nodomain.boulderdash.scenemanagament.scenes.gamescene;
+package nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles;
 
 import android.graphics.Color;
 

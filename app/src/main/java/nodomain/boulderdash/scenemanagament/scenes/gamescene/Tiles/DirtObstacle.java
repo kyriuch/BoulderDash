@@ -1,12 +1,11 @@
-package nodomain.boulderdash.scenemanagament.scenes.gamescene;
-
-import android.graphics.Rect;
+package nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles;
 
 import nodomain.boulderdash.gameobjects.Sprite;
+import nodomain.boulderdash.utils.GridHelper;
 import nodomain.boulderdash.utils.Vector2;
 
 public class DirtObstacle extends Sprite {
     public DirtObstacle(Vector2 position, int width, int height) {
-        super(position, width, height, new Rect(128, 128, 167, 167));
+        super(position, width, height, GridHelper.getRect(4, 4));
     }
 }

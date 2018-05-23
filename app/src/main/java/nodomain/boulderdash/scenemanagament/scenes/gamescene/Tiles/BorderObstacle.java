@@ -1,12 +1,11 @@
-package nodomain.boulderdash.scenemanagament.scenes.gamescene;
-
-import android.graphics.Rect;
+package nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles;
 
 import nodomain.boulderdash.gameobjects.Sprite;
+import nodomain.boulderdash.utils.GridHelper;
 import nodomain.boulderdash.utils.Vector2;
 
 public class BorderObstacle extends Sprite {
     public BorderObstacle(Vector2 position, int width, int height) {
-        super(position, width, height, new Rect(0, 128, 41, 167));
+        super(position, width, height, GridHelper.getRect(1, 4));
     }
 }
