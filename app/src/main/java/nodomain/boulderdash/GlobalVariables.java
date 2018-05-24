@@ -6,8 +6,12 @@ public class GlobalVariables {
     public static int ScreenWidth;
     public static int ScreenHeight;
     public static Context Context;
-    public static int xOffset = 0;
-    public static int yOffset = 0;
+    public static float xOffset = 0;
+    public static float yOffset = 0;
     public static int maxXOffset = 0;
     public static int maxYOffset = 0;
+    public static int minPlayerX = 0;
+    public static int maxPlayerX = 0;
+    public static int minPlayerY = 0;
+    public static int maxPlayerY = 0;
 }

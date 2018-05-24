@@ -76,36 +76,41 @@ public class Player extends Sprite {
     public void Update() {
         expiredTime += Time.DeltaTime;
 
-        if(!canWalk)
+        if (!canWalk)
             walkTimer += Time.DeltaTime;
 
-        if(expiredTime >= 2) {
+        if (expiredTime > 1) {
             expiredTime = 0;
         }
 
-        currentIndex = Math.Lerp(0, 6, expiredTime / 2);
+        currentIndex = Math.Lerp(0, 6, expiredTime);
 
-        switch(currentState) {
-            case IDLE: srcRect = idleRects[currentIndex]; break;
-            case WALK_LEFT: srcRect = walkLeftRects[currentIndex]; break;
-            case WALK_RIGHT: srcRect = walkRightRects[currentIndex]; break;
+        switch (currentState) {
+            case IDLE:
+                srcRect = idleRects[currentIndex];
+                break;
+            case WALK_LEFT:
+                srcRect = walkLeftRects[currentIndex];
+                break;
+            case WALK_RIGHT:
+                srcRect = walkRightRects[currentIndex];
+                break;
         }
 
-        if(isTouchDown)
-        {
+        if (isTouchDown) {
             xRatio = lastEventX / GlobalVariables.ScreenWidth;
             yRatio = lastEventY / GlobalVariables.ScreenHeight;
 
-            if(java.lang.Math.abs(xRatio - 0.5) > java.lang.Math.abs(yRatio - 0.5)) {
-                if(xRatio > 0.5) {
+            if (java.lang.Math.abs(xRatio - 0.5) > java.lang.Math.abs(yRatio - 0.5)) {
+                if (xRatio > 0.65) {
                     tryWalk(Grid.WALK_RIGHT);
-                } else {
+                } else if (xRatio < 0.35) {
                     tryWalk(Grid.WALK_LEFT);
                 }
             } else {
-                if(yRatio > 0.5) {
+                if (yRatio > 0.65) {
                     tryWalk(Grid.WALK_DOWN);
-                } else {
+                } else if (yRatio < 0.35) {
                     tryWalk(Grid.WALK_UP);
                 }
             }
@@ -113,20 +118,19 @@ public class Player extends Sprite {
     }
 
     public void ReceiveTouchInput(MotionEvent motionEvent) {
-        if(motionEvent.getAction() == MotionEvent.ACTION_DOWN)
-        {
+        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             updateEventParams(motionEvent.getX(), motionEvent.getY());
 
             isTouchDown = true;
         }
 
-        if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
             isTouchDown = false;
             currentState = 1;
             expiredTime = 0;
         }
 
-        if(motionEvent.getAction() == MotionEvent.ACTION_MOVE && isTouchDown) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && isTouchDown) {
             updateEventParams(motionEvent.getX(), motionEvent.getY());
         }
     }
@@ -154,19 +158,19 @@ public class Player extends Sprite {
 
     public void UpdateDestRect(Vector2 newPosition) {
         this.destRect = new Rect();
-        destRect.left = (int)(newPosition.X);
-        destRect.right = (int)(newPosition.X + width);
-        destRect.top = (int)(newPosition.Y);
-        destRect.bottom = (int)(newPosition.Y + height);
+        destRect.left = (int) (newPosition.X);
+        destRect.right = (int) (newPosition.X + width);
+        destRect.top = (int) (newPosition.Y);
+        destRect.bottom = (int) (newPosition.Y + height);
     }
 
     private void tryWalk(int direction) {
-        if(canWalk) {
+        if (canWalk) {
             grid.TryWalk(direction);
 
             switch (direction) {
                 case Grid.WALK_LEFT: {
-                    if(currentState != WALK_LEFT) {
+                    if (currentState != WALK_LEFT) {
                         currentState = WALK_LEFT;
                         expiredTime = 0;
                     }
@@ -174,7 +178,7 @@ public class Player extends Sprite {
                     break;
                 }
                 case Grid.WALK_RIGHT: {
-                    if(currentState != WALK_RIGHT) {
+                    if (currentState != WALK_RIGHT) {
                         currentState = WALK_RIGHT;
                         expiredTime = 0;
                     }
@@ -185,7 +189,7 @@ public class Player extends Sprite {
 
             canWalk = false;
         } else {
-            if(walkTimer > 0.1) {
+            if (walkTimer > 0.1) {
                 canWalk = true;
                 walkTimer = 0;
             }
