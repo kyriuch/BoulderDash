@@ -182,6 +182,7 @@ public class Grid
     }
 
     public void Draw(Canvas canvas) {
+        canvas.save();
         canvas.translate(currentXOffset, currentYOffset);
 
         for(int x = 0; x < xTiles; x++) {
@@ -191,6 +192,8 @@ public class Grid
                 }
             }
         }
+
+        canvas.restore();
     }
 
     public void ReceiveTouchEvent(MotionEvent motionEvent) {

@@ -1,12 +1,16 @@
 package nodomain.boulderdash.scenemanagament.scenes.gamescene;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.view.MotionEvent;
 
+import nodomain.boulderdash.GlobalVariables;
+import nodomain.boulderdash.gameobjects.RectColorSprite;
 import nodomain.boulderdash.scenemanagament.Scene;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.DiamondTile;
 import nodomain.boulderdash.utils.Time;
 import nodomain.boulderdash.utils.Math;
+import nodomain.boulderdash.utils.Vector2;
 
 public class GameScene extends Scene {
 
@@ -14,6 +18,7 @@ public class GameScene extends Scene {
 
     private double expiredTime;
     private boolean isIncreasing;
+    private RectColorSprite rectColorSprite;
 
     @Override
     protected void Update() {
@@ -45,6 +50,8 @@ public class GameScene extends Scene {
         super.Draw(canvas);
 
         grid.Draw(canvas);
+
+        rectColorSprite.Draw(canvas);
     }
 
     @Override
@@ -53,6 +60,9 @@ public class GameScene extends Scene {
 
         expiredTime = 0;
         isIncreasing = true;
+
+        rectColorSprite = new RectColorSprite(new Vector2(0, 0),
+                GlobalVariables.ScreenWidth, 60, Color.BLACK);
 
         super.Init();
     }
