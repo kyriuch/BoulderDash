@@ -211,7 +211,7 @@ public class Grid {
     public void Update() {
         moveTilesTime += Time.DeltaTime;
 
-        if (moveTilesTime > 0.15) {
+        if (moveTilesTime > 0.16) {
             moveNow = true;
             moveTilesTime = 0;
         }
@@ -230,7 +230,14 @@ public class Grid {
                         newX = x;
                         newY = y;
 
-                        if (tiles[x][y].getGameObject() instanceof RockTile) {
+                        if (tiles[x][y].getGameObject() instanceof RockTile ||
+                                tiles[x][y].getGameObject() instanceof DiamondTile) {
+
+                            if (tiles[x][y + 1].getGameObject() instanceof Player &&
+                                    tiles[x][y].isFalling()) {
+                                gameScene.PlayerDied();
+                            }
+
                             if (tiles[x][y + 1].getGameObject() instanceof BlackTile) {
                                 newY = y + 1;
                             }
@@ -260,25 +267,19 @@ public class Grid {
                                 ((Sprite) tiles[newX][newY].getGameObject()).UpdateDestRect(new Vector2(newX * tileWidth, newY * tileHeight + yOffset));
                                 tiles[x][y].setGameObject(new BlackTile(new Vector2(x * tileWidth, y * tileHeight + yOffset),
                                         tileWidth, tileHeight));
-                                tiles[x][y].setWalkableByPlayer(true);
-                                tiles[newX][newY].setWalkableByPlayer(false);
-                            }
-                        } else if (tiles[x][y].getGameObject() instanceof DiamondTile) {
-                            if (tiles[x][y + 1].getGameObject() instanceof BlackTile) {
-                                newX = x;
-                                newY = y + 1;
-                            }
 
-                            if (newX != x || newY != y) {
-                                tiles[newX][newY].setGameObject(tiles[x][y].getGameObject());
-                                ((Sprite) tiles[newX][newY].getGameObject()).UpdateDestRect(new Vector2(newX * tileWidth, newY * tileHeight + yOffset));
-                                tiles[x][y].setGameObject(new BlackTile(new Vector2(x * tileWidth, y * tileHeight + yOffset),
-                                        tileWidth, tileHeight));
+                                tiles[x][y].setFalling(false);
+                                tiles[newX][newY].setFalling(true);
+
+                                if (tiles[newX][newY].getGameObject() instanceof RockTile) {
+                                    tiles[x][y].setWalkableByPlayer(true);
+                                    tiles[newX][newY].setWalkableByPlayer(false);
+                                }
+                            } else if (tiles[x][y].isFalling()) {
+                                tiles[x][y].setFalling(false);
                             }
                         }
                     }
-
-
                 }
             }
         }

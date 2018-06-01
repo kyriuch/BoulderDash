@@ -14,6 +14,8 @@ import nodomain.boulderdash.gameobjects.RectColorSprite;
 import nodomain.boulderdash.gameobjects.Sprite;
 import nodomain.boulderdash.gameobjects.Text;
 import nodomain.boulderdash.scenemanagament.Scene;
+import nodomain.boulderdash.scenemanagament.SceneManager;
+import nodomain.boulderdash.scenemanagament.scenes.MenuScene;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.DiamondTile;
 import nodomain.boulderdash.utils.GridHelper;
 import nodomain.boulderdash.utils.Time;
@@ -153,13 +155,13 @@ public class GameScene extends Scene {
         diamondsAfterCollectionText = new Text(String.format(Locale.getDefault(), "%02d", grid.diamondsAfterCollection), new Vector2(200, 35));
         diamondsAfterCollectionText.SetTextSize(46);
 
-
         super.Init();
     }
 
     @Override
     protected void Terminate() {
-
+        GlobalVariables.xOffset = 0;
+        GlobalVariables.yOffset = 0;
     }
 
     @Override
@@ -192,5 +194,9 @@ public class GameScene extends Scene {
             PlayerScored(grid.diamondsBeforeCollection);
         }
 
+    }
+
+    public void PlayerDied() {
+        SceneManager.getInstance().ForceChangeScene(new MenuScene());
     }
 }

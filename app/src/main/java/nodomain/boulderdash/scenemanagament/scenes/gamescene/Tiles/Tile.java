@@ -7,10 +7,12 @@ import nodomain.boulderdash.gameobjects.GameObject;
 public class Tile {
     private GameObject gameObject;
     private boolean walkableByPlayer;
+    private boolean isFalling;
 
     public Tile(GameObject gameObject) {
         this.gameObject = gameObject;
         walkableByPlayer = false;
+        isFalling = false;
     }
 
     public Tile(GameObject gameObject, boolean walkableByPlayer) {
@@ -40,5 +42,13 @@ public class Tile {
 
     public void setGameObject(GameObject gameObject) {
         this.gameObject = gameObject;
+    }
+
+    public boolean isFalling() {
+        return isFalling;
+    }
+
+    public void setFalling(boolean falling) {
+        isFalling = falling;
     }
 }
