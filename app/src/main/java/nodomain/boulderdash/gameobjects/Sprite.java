@@ -2,6 +2,7 @@ package nodomain.boulderdash.gameobjects;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -63,5 +64,17 @@ public class Sprite extends GameObject {
         destRect.right = (int)(position.X + width);
         destRect.top = (int)(position.Y);
         destRect.bottom = (int)(position.Y + height);
+    }
+
+    public void SetColorFilter(ColorFilter colorFilter) {
+        paint.setColorFilter(colorFilter);
+    }
+
+    public void UpdateDestRect(Vector2 newPosition) {
+        this.destRect = new Rect();
+        destRect.left = (int) (newPosition.X);
+        destRect.right = (int) (newPosition.X + width);
+        destRect.top = (int) (newPosition.Y);
+        destRect.bottom = (int) (newPosition.Y + height);
     }
 }

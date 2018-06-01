@@ -156,14 +156,6 @@ public class Player extends Sprite {
         this.y = y;
     }
 
-    public void UpdateDestRect(Vector2 newPosition) {
-        this.destRect = new Rect();
-        destRect.left = (int) (newPosition.X);
-        destRect.right = (int) (newPosition.X + width);
-        destRect.top = (int) (newPosition.Y);
-        destRect.bottom = (int) (newPosition.Y + height);
-    }
-
     private void tryWalk(int direction) {
         if (canWalk) {
             grid.TryWalk(direction);

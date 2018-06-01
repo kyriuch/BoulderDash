@@ -38,4 +38,11 @@ public class Text extends GameObject {
         paint.setTextSize(size);
     }
 
+    public void SetText(String newText) {
+        text = newText;
+    }
+
+    public void SetColor(int color) {
+        paint.setColor(color);
+    }
 }
