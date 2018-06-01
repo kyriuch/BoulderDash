@@ -26,7 +26,6 @@ public class GameScene extends Scene {
 
     // ANIMATIONS VARIABLES
     private double expiredTime;
-    private boolean isIncreasing;
 
 
     // UPPER TEXTS
@@ -49,38 +48,60 @@ public class GameScene extends Scene {
 
     private boolean diamondsCollected;
 
-
     // OTHERS
     private Grid grid;
+
+    private double diedTimer;
+    private boolean playerDied;
+
+    private boolean playerFinished;
+    private double finishTimer;
+
+    private int lives;
 
     @Override
     protected void Update() {
         super.Update();
 
-        if (isIncreasing) {
-            expiredTime += Time.DeltaTime;
+        expiredTime += Time.DeltaTime;
 
-            if(expiredTime >= 0.5) {
-                expiredTime = 0.5;
-                isIncreasing = false;
-            }
-        } else {
-            expiredTime -= Time.DeltaTime;
-
-            if (expiredTime <= 0) {
-                expiredTime = 0;
-                isIncreasing = true;
-            }
+        if(expiredTime >= 1) {
+            expiredTime = 0;
         }
 
-        if(gameTime > Time.DeltaTime)
+        if(gameTime > Time.DeltaTime && !playerDied && !playerFinished)
             gameTime -= Time.DeltaTime;
 
         gameTimeText.SetText(String.valueOf(((int) gameTime)));
 
-        DiamondTile.currentIndex = Math.Lerp(0, 3, expiredTime * 2);
+        DiamondTile.currentIndex = Math.Lerp(0, 7, expiredTime);
 
         grid.Update();
+
+        if(playerDied) {
+            diedTimer += Time.DeltaTime;
+
+            if(diedTimer >= 3) {
+                if(lives > 0)
+                    restart();
+                else
+                    SceneManager.getInstance().ForceChangeScene(new MenuScene());
+            }
+        }
+
+        if(playerFinished) {
+            finishTimer += Time.DeltaTime;
+
+            if(finishTimer <= 2) {
+                scoreText.SetText(String.format(Locale.getDefault(), "%06d", Math.Lerp(0, (int) gameTime, finishTimer / 2) + score));
+                gameTimeText.SetText(String.format(Locale.getDefault(), "%06d", (int)gameTime - Math.Lerp(0, (int) gameTime, finishTimer / 2)));
+            }
+
+            if(finishTimer >= 5) {
+                gameTime = 0;
+                SceneManager.getInstance().ForceChangeScene(new MenuScene());
+            }
+        }
     }
 
     @Override
@@ -110,10 +131,11 @@ public class GameScene extends Scene {
     @Override
     protected void Init() {
         diamondsCollected = false;
+        playerDied = false;
+
         grid = new Grid(1, 64, 64, this);
 
         expiredTime = 0;
-        isIncreasing = true;
 
         rectColorSprite = new RectColorSprite(new Vector2(0, 0),
                 GlobalVariables.ScreenWidth, 50, Color.BLACK);
@@ -155,13 +177,27 @@ public class GameScene extends Scene {
         diamondsAfterCollectionText = new Text(String.format(Locale.getDefault(), "%02d", grid.diamondsAfterCollection), new Vector2(200, 35));
         diamondsAfterCollectionText.SetTextSize(46);
 
+        lives = 3;
+
         super.Init();
+    }
+
+    private void restart() {
+        grid.Restart(1);
+
+        diamondsCollected = false;
+        playerDied = false;
+        expiredTime = 0;
+
+        gameTime = 150;
+        gameTimeText.SetText(String.valueOf(((int) gameTime)));
+
+        diamonds = 0;
+        diamondsText.SetText(String.format(Locale.getDefault(), "%02d", diamonds));
     }
 
     @Override
     protected void Terminate() {
-        GlobalVariables.xOffset = 0;
-        GlobalVariables.yOffset = 0;
     }
 
     @Override
@@ -197,6 +233,13 @@ public class GameScene extends Scene {
     }
 
     public void PlayerDied() {
-        SceneManager.getInstance().ForceChangeScene(new MenuScene());
+        playerDied = true;
+        lives--;
+        diedTimer = 0;
+    }
+
+    public void PlayerFinished() {
+        playerFinished = true;
+        finishTimer = 0;
     }
 }

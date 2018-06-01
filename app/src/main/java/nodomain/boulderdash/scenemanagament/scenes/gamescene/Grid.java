@@ -19,6 +19,7 @@ import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.BrickObstacle
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.DiamondTile;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.DirtObstacle;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.ExitTile;
+import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.ExplosionTile;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.Player;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.RockTile;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.Tile;
@@ -38,7 +39,7 @@ public class Grid {
 
     private Tile[][] tiles;
 
-    private Player player;
+    public Player player;
 
     private float currentXOffset, currentYOffset;
     private final float smoothSpeed = 0.08f;
@@ -53,8 +54,14 @@ public class Grid {
     private int newX;
     private int newY;
 
+    private int diedX;
+    private int diedY;
+
     private double moveTilesTime;
     private boolean moveNow;
+
+    private boolean playerDied;
+    private double diedTimer;
 
     Grid(int level, int tileWidth, int tileHeight, GameScene gameScene) {
         this.tileWidth = tileWidth;
@@ -63,9 +70,14 @@ public class Grid {
 
         GlobalVariables.minPlayerX = (GlobalVariables.ScreenWidth / tileWidth / 2) - 1;
         GlobalVariables.minPlayerY = (GlobalVariables.ScreenHeight / tileHeight / 2) - 2;
+
+        Restart(level);
+    }
+
+    public void Restart(int level) {
         currentXOffset = 0;
         currentYOffset = 0;
-
+        playerDied = false;
 
         try {
             InputStream inputStream = GlobalVariables.Context.getAssets().open("level" + String.valueOf(level) + ".level");
@@ -86,12 +98,40 @@ public class Grid {
         initBorderObstacles();
         moveTilesTime = 0;
         moveNow = true;
+
+        boolean goOut = true;
+
+        while (true) {
+            if (GlobalVariables.xOffset < 0 && player.getX() < GlobalVariables.maxPlayerX) {
+                GlobalVariables.xOffset += tileWidth;
+                goOut = false;
+            }
+
+            if (GlobalVariables.yOffset < 0 && player.getY() < GlobalVariables.maxPlayerY) {
+                GlobalVariables.yOffset += tileHeight;
+                goOut = false;
+            }
+
+            if (java.lang.Math.abs(GlobalVariables.xOffset) < (GlobalVariables.maxXOffset) && player.getX() > GlobalVariables.minPlayerX) {
+                GlobalVariables.xOffset -= tileWidth;
+                goOut = false;
+            }
+
+            if (java.lang.Math.abs(GlobalVariables.yOffset) < (GlobalVariables.maxYOffset) && player.getY() > GlobalVariables.minPlayerY) {
+                GlobalVariables.yOffset -= tileHeight;
+                goOut = false;
+            }
+
+            if (goOut)
+                break;
+            else
+                goOut = true;
+        }
     }
 
     private void processLines(List<String> lines) {
         int x = 1;
         int y = 1;
-
 
         xTiles = 2 + lines.get(0).length();
         yTiles = 1 + lines.size();
@@ -216,6 +256,33 @@ public class Grid {
             moveTilesTime = 0;
         }
 
+        if(playerDied) {
+            diedTimer += Time.DeltaTime;
+
+            if(diedTimer >= 0.75) {
+                playerDied = false;
+
+                tiles[diedX - 1][diedY].setGameObject(new BlackTile(new Vector2((diedX - 1) * tileWidth, diedY * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX - 1][diedY + 1].setGameObject(new BlackTile(new Vector2((diedX - 1) * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX - 1][diedY - 1].setGameObject(new BlackTile(new Vector2((diedX - 1) * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX][diedY - 1].setGameObject(new BlackTile(new Vector2(diedX * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX][diedY].setGameObject(new BlackTile(new Vector2(diedX * tileWidth, diedY * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX][diedY + 1].setGameObject(new BlackTile(new Vector2(diedX * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX + 1][diedY - 1].setGameObject(new BlackTile(new Vector2((diedX + 1) * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX + 1][diedY].setGameObject(new BlackTile(new Vector2((diedX + 1) * tileWidth, diedY * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                tiles[diedX + 1][diedY + 1].setGameObject(new BlackTile(new Vector2((diedX + 1) * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+            }
+        }
+
         currentXOffset = nodomain.boulderdash.utils.Math.Lerp(currentXOffset, GlobalVariables.xOffset, smoothSpeed);
         currentYOffset = nodomain.boulderdash.utils.Math.Lerp(currentYOffset, GlobalVariables.yOffset, smoothSpeed);
 
@@ -236,6 +303,34 @@ public class Grid {
                             if (tiles[x][y + 1].getGameObject() instanceof Player &&
                                     tiles[x][y].isFalling()) {
                                 gameScene.PlayerDied();
+
+                                diedX = x;
+                                diedY = y + 1;
+
+                                playerDied = true;
+                                diedTimer = 0;
+
+                                tiles[diedX - 1][diedY].setGameObject(new ExplosionTile(new Vector2((diedX - 1) * tileWidth, diedY * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX - 1][diedY + 1].setGameObject(new ExplosionTile(new Vector2((diedX - 1) * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX - 1][diedY - 1].setGameObject(new ExplosionTile(new Vector2((diedX - 1) * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX][diedY - 1].setGameObject(new ExplosionTile(new Vector2(diedX * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX][diedY].setGameObject(new ExplosionTile(new Vector2(diedX * tileWidth, diedY * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX][diedY + 1].setGameObject(new ExplosionTile(new Vector2(diedX * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX + 1][diedY - 1].setGameObject(new ExplosionTile(new Vector2((diedX + 1) * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX + 1][diedY].setGameObject(new ExplosionTile(new Vector2((diedX + 1) * tileWidth, diedY * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+                                tiles[diedX + 1][diedY + 1].setGameObject(new ExplosionTile(new Vector2((diedX + 1) * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                                        tileWidth, tileHeight));
+
+
+                                return;
                             }
 
                             if (tiles[x][y + 1].getGameObject() instanceof BlackTile) {
@@ -363,6 +458,8 @@ public class Grid {
 
         if (currentGameObject instanceof DiamondTile) {
             this.gameScene.DiamondPickedUp();
+        } else if(currentGameObject instanceof ExitTile) {
+            this.gameScene.PlayerFinished();
         }
 
         tiles[newX][newY].setGameObject(tiles[currentPlayerX][currentPlayerY].getGameObject());
