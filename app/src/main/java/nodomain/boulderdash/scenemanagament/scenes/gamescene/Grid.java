@@ -13,6 +13,7 @@ import java.util.List;
 import nodomain.boulderdash.GlobalVariables;
 import nodomain.boulderdash.gameobjects.GameObject;
 import nodomain.boulderdash.gameobjects.Sprite;
+import nodomain.boulderdash.memory.Memory;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.BlackTile;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.BorderObstacle;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.Tiles.BrickObstacle;
@@ -51,9 +52,6 @@ public class Grid {
     private int exitX;
     private int exitY;
 
-    private int newX;
-    private int newY;
-
     private int diedX;
     private int diedY;
 
@@ -63,10 +61,13 @@ public class Grid {
     private boolean playerDied;
     private double diedTimer;
 
+    private int triedPush;
+
     Grid(int level, int tileWidth, int tileHeight, GameScene gameScene) {
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
         this.gameScene = gameScene;
+        triedPush = 0;
 
         GlobalVariables.minPlayerX = (GlobalVariables.ScreenWidth / tileWidth / 2) - 1;
         GlobalVariables.minPlayerY = (GlobalVariables.ScreenHeight / tileHeight / 2) - 2;
@@ -78,6 +79,7 @@ public class Grid {
         currentXOffset = 0;
         currentYOffset = 0;
         playerDied = false;
+        triedPush = 0;
 
         try {
             InputStream inputStream = GlobalVariables.Context.getAssets().open("level" + String.valueOf(level) + ".level");
@@ -256,10 +258,10 @@ public class Grid {
             moveTilesTime = 0;
         }
 
-        if(playerDied) {
+        if (playerDied) {
             diedTimer += Time.DeltaTime;
 
-            if(diedTimer >= 0.75) {
+            if (diedTimer >= 0.75) {
                 playerDied = false;
 
                 tiles[diedX - 1][diedY].setGameObject(new BlackTile(new Vector2((diedX - 1) * tileWidth, diedY * tileHeight + yOffset),
@@ -294,8 +296,8 @@ public class Grid {
 
                 if (moveNow) {
                     if (y < yTiles - 1) {
-                        newX = x;
-                        newY = y;
+                        int newX = x;
+                        int newY = y;
 
                         if (tiles[x][y].getGameObject() instanceof RockTile ||
                                 tiles[x][y].getGameObject() instanceof DiamondTile) {
@@ -337,20 +339,17 @@ public class Grid {
                                 newY = y + 1;
                             }
 
-                            if (tiles[x][y + 1].getGameObject() instanceof RockTile ||
-                                    tiles[x][y + 1].getGameObject() instanceof DiamondTile) {
+                            if (tiles[x][y + 1].getGameObject() instanceof RockTile) {
 
                                 if (x > 0) {
-                                    if ((tiles[x - 1][y + 1].getGameObject() instanceof BlackTile ||
-                                            tiles[x - 1][y + 1].getGameObject() instanceof Player) &&
+                                    if ((tiles[x - 1][y + 1].getGameObject() instanceof BlackTile) &&
                                             tiles[x - 1][y].getGameObject() instanceof BlackTile) {
                                         newX = x - 1;
                                     }
                                 }
 
                                 if (x < xTiles - 1) {
-                                    if ((tiles[x + 1][y + 1].getGameObject() instanceof BlackTile ||
-                                            tiles[x + 1][y + 1].getGameObject() instanceof Player) &&
+                                    if ((tiles[x + 1][y + 1].getGameObject() instanceof BlackTile) &&
                                             tiles[x + 1][y].getGameObject() instanceof BlackTile) {
                                         newX = x + 1;
                                     }
@@ -369,6 +368,16 @@ public class Grid {
                                 if (tiles[newX][newY].getGameObject() instanceof RockTile) {
                                     tiles[x][y].setWalkableByPlayer(true);
                                     tiles[newX][newY].setWalkableByPlayer(false);
+
+                                    if (!(tiles[newX][newY + 1].getGameObject() instanceof BlackTile) &&
+                                            !(tiles[newX][newY + 1].getGameObject() instanceof Player)) {
+                                        Memory.crackSound.start();
+                                    }
+                                } else if (tiles[newX][newY].getGameObject() instanceof DiamondTile) {
+                                    if (!(tiles[newX][newY + 1].getGameObject() instanceof BlackTile) &&
+                                            !(tiles[newX][newY + 1].getGameObject() instanceof Player)) {
+                                        Memory.diamondFallSound.start();
+                                    }
                                 }
                             } else if (tiles[x][y].isFalling()) {
                                 tiles[x][y].setFalling(false);
@@ -397,6 +406,42 @@ public class Grid {
         canvas.restore();
     }
 
+    public void PlayerDied() {
+        for (int i = 0; i < xTiles; i++) {
+            for (int j = 0; j < yTiles; j++) {
+                if (tiles[i][j].getGameObject() instanceof Player) {
+                    diedX = i;
+                    diedY = j + 1;
+
+                    playerDied = true;
+                    diedTimer = 0;
+
+                    tiles[diedX - 1][diedY].setGameObject(new ExplosionTile(new Vector2((diedX - 1) * tileWidth, diedY * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX - 1][diedY + 1].setGameObject(new ExplosionTile(new Vector2((diedX - 1) * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX - 1][diedY - 1].setGameObject(new ExplosionTile(new Vector2((diedX - 1) * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX][diedY - 1].setGameObject(new ExplosionTile(new Vector2(diedX * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX][diedY].setGameObject(new ExplosionTile(new Vector2(diedX * tileWidth, diedY * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX][diedY + 1].setGameObject(new ExplosionTile(new Vector2(diedX * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX + 1][diedY - 1].setGameObject(new ExplosionTile(new Vector2((diedX + 1) * tileWidth, (diedY - 1) * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX + 1][diedY].setGameObject(new ExplosionTile(new Vector2((diedX + 1) * tileWidth, diedY * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+                    tiles[diedX + 1][diedY + 1].setGameObject(new ExplosionTile(new Vector2((diedX + 1) * tileWidth, (diedY + 1) * tileHeight + yOffset),
+                            tileWidth, tileHeight));
+
+                    i = xTiles - 1;
+                    break;
+                }
+            }
+        }
+    }
+
     public void ReceiveTouchEvent(MotionEvent motionEvent) {
         player.ReceiveTouchInput(motionEvent);
     }
@@ -404,8 +449,28 @@ public class Grid {
     public void TryWalk(int direction) {
         switch (direction) {
             case WALK_LEFT: {
-                if (player.getX() == 0 || !tiles[player.getX() - 1][player.getY()].isWalkableByPlayer())
+                if (player.getX() == 0)
                     return;
+
+                if (!tiles[player.getX() - 1][player.getY()].isWalkableByPlayer()) {
+                    if (tiles[player.getX() - 1][player.getY()].getGameObject() instanceof RockTile) {
+                        if (player.getX() - 1 > 0 &&
+                                tiles[player.getX() - 2][player.getY()].getGameObject() instanceof BlackTile) {
+                            triedPush++;
+                        }
+                    } else {
+                        return;
+                    }
+
+
+                    if (triedPush == 5) {
+                        push(player.getX() - 1, player.getY(), direction);
+                    }
+
+                    return;
+                }
+
+                triedPush = 0;
 
                 if (GlobalVariables.xOffset < 0 && player.getX() < GlobalVariables.maxPlayerX)
                     GlobalVariables.xOffset += tileWidth;
@@ -418,6 +483,8 @@ public class Grid {
                 if (player.getY() == 0 || !tiles[player.getX()][player.getY() - 1].isWalkableByPlayer())
                     return;
 
+                triedPush = 0;
+
                 if (GlobalVariables.yOffset < 0 && player.getY() < GlobalVariables.maxPlayerY)
                     GlobalVariables.yOffset += tileHeight;
 
@@ -426,8 +493,28 @@ public class Grid {
                 break;
             }
             case WALK_RIGHT: {
-                if (player.getX() == tiles.length - 1 || !tiles[player.getX() + 1][player.getY()].isWalkableByPlayer())
+                if (player.getX() == tiles.length - 1)
                     return;
+
+                if (!tiles[player.getX() + 1][player.getY()].isWalkableByPlayer()) {
+                    if (tiles[player.getX() + 1][player.getY()].getGameObject() instanceof RockTile) {
+                        if (player.getX() + 1 < tiles.length - 1 &&
+                                tiles[player.getX() + 2][player.getY()].getGameObject() instanceof BlackTile) {
+                            triedPush++;
+                        }
+                    } else {
+                        return;
+                    }
+
+
+                    if (triedPush == 5) {
+                        push(player.getX() + 1, player.getY(), direction);
+                    }
+
+                    return;
+                }
+
+                triedPush = 0;
 
                 if (java.lang.Math.abs(GlobalVariables.xOffset) < (GlobalVariables.maxXOffset) && player.getX() > GlobalVariables.minPlayerX)
                     GlobalVariables.xOffset -= tileWidth;
@@ -457,9 +544,14 @@ public class Grid {
         GameObject currentGameObject = tiles[newX][newY].getGameObject();
 
         if (currentGameObject instanceof DiamondTile) {
+            Memory.pickDiamondSound.start();
             this.gameScene.DiamondPickedUp();
-        } else if(currentGameObject instanceof ExitTile) {
+        } else if (currentGameObject instanceof ExitTile) {
             this.gameScene.PlayerFinished();
+        } else if (currentGameObject instanceof DirtObstacle) {
+            Memory.dirtSound.start();
+        } else if (currentGameObject instanceof BlackTile) {
+            Memory.emptySound.start();
         }
 
         tiles[newX][newY].setGameObject(tiles[currentPlayerX][currentPlayerY].getGameObject());
@@ -469,6 +561,42 @@ public class Grid {
         tiles[currentPlayerX][currentPlayerY].setGameObject(new BlackTile(new Vector2(currentPlayerX * tileWidth, currentPlayerY * tileHeight + yOffset),
                 tileWidth, tileHeight));
         tiles[currentPlayerX][currentPlayerY].setWalkableByPlayer(true);
+    }
+
+    private void push(int newX, int newY, int direction) {
+        int currentPlayerX = player.getX();
+        int currentPlayerY = player.getY();
+
+
+        tiles[newX][newY].setGameObject(tiles[currentPlayerX][currentPlayerY].getGameObject());
+        player.setX(newX);
+        player.setY(newY);
+        player.UpdateDestRect(new Vector2(newX * tileWidth, newY * tileHeight + yOffset));
+        tiles[currentPlayerX][currentPlayerY].setGameObject(new BlackTile(new Vector2(currentPlayerX * tileWidth, currentPlayerY * tileHeight + yOffset),
+                tileWidth, tileHeight));
+        tiles[currentPlayerX][currentPlayerY].setWalkableByPlayer(true);
+
+
+        switch (direction) {
+            case WALK_LEFT:
+                tiles[newX - 1][newY].setGameObject(new RockTile(new Vector2((newX - 1) * tileWidth, newY * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                ((Sprite) tiles[newX - 1][newY].getGameObject()).UpdateDestRect(new Vector2((newX - 1) * tileHeight, newY * tileHeight + yOffset));
+                tiles[newX - 1][newY].setWalkableByPlayer(false);
+
+                break;
+            case WALK_RIGHT:
+                tiles[newX + 1][currentPlayerY].setGameObject(new RockTile(new Vector2((newX + 2) * tileWidth, newY * tileHeight + yOffset),
+                        tileWidth, tileHeight));
+                ((Sprite) tiles[newX + 1][newY].getGameObject()).UpdateDestRect(new Vector2((newX + 1) * tileHeight, newY * tileHeight + yOffset));
+                tiles[newX + 1][currentPlayerY].setWalkableByPlayer(false);
+
+                break;
+        }
+
+        triedPush = 0;
+        Memory.crackSound.start();
+
     }
 
     public void OpenExit() {

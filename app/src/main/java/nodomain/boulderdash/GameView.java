@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import nodomain.boulderdash.memory.Memory;
 import nodomain.boulderdash.scenemanagament.SceneManager;
 import nodomain.boulderdash.scenemanagament.scenes.MenuScene;
 import nodomain.boulderdash.utils.Time;
@@ -23,22 +24,22 @@ public class GameView extends SurfaceView implements Runnable {
     public GameView(Context context) {
         super(context);
 
-        init(context);
+        init();
     }
 
     public GameView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        init(context);
+        init();
     }
 
     public GameView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        init(context);
+        init();
     }
 
-    private void init(Context context) {
+    private void init() {
         sceneManager = SceneManager.getInstance();
         surfaceHolder = getHolder();
     }
@@ -51,6 +52,8 @@ public class GameView extends SurfaceView implements Runnable {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
+        Memory.backgroundMusic.stop();
     }
 
     public void Resume() {

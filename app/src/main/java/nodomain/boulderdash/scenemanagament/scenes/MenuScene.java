@@ -4,8 +4,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.view.MotionEvent;
 
+import java.io.IOException;
+
 import nodomain.boulderdash.gameobjects.ColorSprite;
 import nodomain.boulderdash.gameobjects.Text;
+import nodomain.boulderdash.memory.Memory;
 import nodomain.boulderdash.scenemanagament.Scene;
 import nodomain.boulderdash.scenemanagament.SceneManager;
 import nodomain.boulderdash.scenemanagament.scenes.gamescene.GameScene;
@@ -36,11 +39,11 @@ public class MenuScene extends Scene {
 
         isSwitching = false;
         colorSprite = new ColorSprite(Color.argb(0, 0, 0, 0));
+        Memory.backgroundMusic.start();
     }
 
     @Override
     protected void Terminate() {
-
     }
 
     @Override

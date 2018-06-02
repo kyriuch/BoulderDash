@@ -22,6 +22,7 @@ public class MainActivity extends Activity {
 
         initGlobalVariables();
         cacheAssets();
+        Memory.cacheSounds();
 
         gameView = setupGameView();
 

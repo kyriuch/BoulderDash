@@ -31,10 +31,6 @@ public class SceneManager {
         }
     }
 
-    public void ChangeCurrentScene(Scene newScene) {
-        currentScene.SwitchToOtherScene(newScene);
-    }
-
     public void ForceChangeScene(Scene newScene) {
         if(currentScene != null) {
             currentScene.StopRunning();

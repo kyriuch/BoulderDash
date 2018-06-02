@@ -13,6 +13,7 @@ import nodomain.boulderdash.GlobalVariables;
 import nodomain.boulderdash.gameobjects.RectColorSprite;
 import nodomain.boulderdash.gameobjects.Sprite;
 import nodomain.boulderdash.gameobjects.Text;
+import nodomain.boulderdash.memory.Memory;
 import nodomain.boulderdash.scenemanagament.Scene;
 import nodomain.boulderdash.scenemanagament.SceneManager;
 import nodomain.boulderdash.scenemanagament.scenes.MenuScene;
@@ -58,6 +59,7 @@ public class GameScene extends Scene {
     private double finishTimer;
 
     private int lives;
+    private int timeoutState;
 
     @Override
     protected void Update() {
@@ -65,40 +67,68 @@ public class GameScene extends Scene {
 
         expiredTime += Time.DeltaTime;
 
-        if(expiredTime >= 1) {
+        if (expiredTime >= 1) {
             expiredTime = 0;
         }
 
-        if(gameTime > Time.DeltaTime && !playerDied && !playerFinished)
+        if (gameTime > Time.DeltaTime && !playerDied && !playerFinished)
             gameTime -= Time.DeltaTime;
 
-        gameTimeText.SetText(String.valueOf(((int) gameTime)));
+        if (timeoutState != (int) gameTime) {
+            timeoutState = (int) gameTime;
+
+            switch (timeoutState) {
+                case 5:
+                    Memory.timeoutFiveSound.start();
+                    break;
+                case 4:
+                    Memory.timeoutFourSound.start();
+                    break;
+                case 3:
+                    Memory.timeoutThreeSound.start();
+                    break;
+                case 2:
+                    Memory.timeoutTwoSound.start();
+                    break;
+                case 1:
+                    Memory.timeoutOneSound.start();
+                    break;
+                case 0:
+                    PlayerDied();
+                    grid.PlayerDied();
+                    break;
+            }
+
+        }
+
+            gameTimeText.SetText(String.valueOf(((int) gameTime)));
 
         DiamondTile.currentIndex = Math.Lerp(0, 7, expiredTime);
 
         grid.Update();
 
-        if(playerDied) {
+        if (playerDied) {
             diedTimer += Time.DeltaTime;
 
-            if(diedTimer >= 3) {
-                if(lives > 0)
+            if (diedTimer >= 3) {
+                if (lives > 0)
                     restart();
                 else
                     SceneManager.getInstance().ForceChangeScene(new MenuScene());
             }
         }
 
-        if(playerFinished) {
+        if (playerFinished) {
             finishTimer += Time.DeltaTime;
 
-            if(finishTimer <= 2) {
+            if (finishTimer <= 2) {
                 scoreText.SetText(String.format(Locale.getDefault(), "%06d", Math.Lerp(0, (int) gameTime, finishTimer / 2) + score));
-                gameTimeText.SetText(String.format(Locale.getDefault(), "%06d", (int)gameTime - Math.Lerp(0, (int) gameTime, finishTimer / 2)));
+                gameTimeText.SetText(String.format(Locale.getDefault(), "%d", (int) gameTime - Math.Lerp(0, (int) gameTime, finishTimer / 2)));
+            } else {
+                gameTimeText.SetText(String.format(Locale.getDefault(), "%d", 0));
             }
 
-            if(finishTimer >= 5) {
-                gameTime = 0;
+            if (finishTimer >= 5) {
                 SceneManager.getInstance().ForceChangeScene(new MenuScene());
             }
         }
@@ -115,7 +145,7 @@ public class GameScene extends Scene {
         scoreText.Draw(canvas);
         diamondsText.Draw(canvas);
 
-        if(diamondsCollected) {
+        if (diamondsCollected) {
             for (Sprite DiamondsAfterCollect : diamondsAfterCollect) {
                 DiamondsAfterCollect.Draw(canvas);
             }
@@ -143,6 +173,7 @@ public class GameScene extends Scene {
 
         // UPPER TEXTS
         gameTime = 150;
+        timeoutState = (int) gameTime;
         gameTimeText = new Text(String.valueOf(((int) gameTime)), new Vector2(GlobalVariables.ScreenWidth / 2 + 150, 35));
         gameTimeText.SetTextSize(46);
 
@@ -169,7 +200,7 @@ public class GameScene extends Scene {
 
         diamondsAfterCollect = new Sprite[3];
 
-        for(int i = 0; i < diamondsAfterCollect.length; i++) {
+        for (int i = 0; i < diamondsAfterCollect.length; i++) {
             diamondsAfterCollect[i] = new Sprite(new Vector2(10 + i * 50, 6), 35, 35, GridHelper.getRect(1, 5));
             diamondsAfterCollect[i].SetColorFilter(new ColorMatrixColorFilter(colorMatrix));
         }
@@ -219,12 +250,12 @@ public class GameScene extends Scene {
         this.diamonds += 1;
         this.diamondsText.SetText(String.format(Locale.getDefault(), "%02d", diamonds));
 
-        if(diamonds == grid.diamondsToCollect) {
+        if (diamonds == grid.diamondsToCollect) {
             diamondsCollected = true;
             grid.OpenExit();
         }
 
-        if(diamondsCollected) {
+        if (diamondsCollected) {
             PlayerScored(grid.diamondsAfterCollection);
         } else {
             PlayerScored(grid.diamondsBeforeCollection);
@@ -233,12 +264,14 @@ public class GameScene extends Scene {
     }
 
     public void PlayerDied() {
+        Memory.explosionSound.start();
         playerDied = true;
         lives--;
         diedTimer = 0;
     }
 
     public void PlayerFinished() {
+        Memory.finishedSound.start();
         playerFinished = true;
         finishTimer = 0;
     }
