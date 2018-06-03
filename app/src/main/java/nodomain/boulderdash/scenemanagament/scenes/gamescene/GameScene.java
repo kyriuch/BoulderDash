@@ -6,7 +6,6 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.view.MotionEvent;
 
-import java.text.DecimalFormat;
 import java.util.Locale;
 
 import nodomain.boulderdash.GlobalVariables;

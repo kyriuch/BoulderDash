@@ -1,12 +1,6 @@
 package nodomain.boulderdash.scenemanagament.scenes.gamescene;
 
-import android.graphics.BitmapShader;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.PorterDuffXfermode;
 import android.view.MotionEvent;
 
 import java.io.BufferedReader;
@@ -191,11 +185,6 @@ public class Grid {
 
                         break;
                     }
-                }
-
-
-                if(tiles[x][y].getGameObject() instanceof Sprite) {
-                    ((Sprite) tiles[x][y].getGameObject()).SetColorFilter(new PorterDuffColorFilter(Color.rgb(87, 83, 83), PorterDuff.Mode.DST_OVER));
                 }
 
                 x++;
