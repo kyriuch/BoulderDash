@@ -1,6 +1,12 @@
 package nodomain.boulderdash.scenemanagament.scenes.gamescene;
 
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuffXfermode;
 import android.view.MotionEvent;
 
 import java.io.BufferedReader;
@@ -69,15 +75,10 @@ public class Grid {
         this.gameScene = gameScene;
         triedPush = 0;
 
-        GlobalVariables.minPlayerX = (GlobalVariables.ScreenWidth / tileWidth / 2) - 1;
-        GlobalVariables.minPlayerY = (GlobalVariables.ScreenHeight / tileHeight / 2) - 2;
-
         Restart(level);
     }
 
     public void Restart(int level) {
-        currentXOffset = 0;
-        currentYOffset = 0;
         playerDied = false;
         triedPush = 0;
 
@@ -97,38 +98,12 @@ public class Grid {
             e.printStackTrace();
         }
 
+        currentXOffset = -(xTiles * tileWidth / 2);
+        currentYOffset = -(yTiles * tileHeight / 2);
+
         initBorderObstacles();
         moveTilesTime = 0;
         moveNow = true;
-
-        boolean goOut = true;
-
-        while (true) {
-            if (GlobalVariables.xOffset < 0 && player.getX() < GlobalVariables.maxPlayerX) {
-                GlobalVariables.xOffset += tileWidth;
-                goOut = false;
-            }
-
-            if (GlobalVariables.yOffset < 0 && player.getY() < GlobalVariables.maxPlayerY) {
-                GlobalVariables.yOffset += tileHeight;
-                goOut = false;
-            }
-
-            if (java.lang.Math.abs(GlobalVariables.xOffset) < (GlobalVariables.maxXOffset) && player.getX() > GlobalVariables.minPlayerX) {
-                GlobalVariables.xOffset -= tileWidth;
-                goOut = false;
-            }
-
-            if (java.lang.Math.abs(GlobalVariables.yOffset) < (GlobalVariables.maxYOffset) && player.getY() > GlobalVariables.minPlayerY) {
-                GlobalVariables.yOffset -= tileHeight;
-                goOut = false;
-            }
-
-            if (goOut)
-                break;
-            else
-                goOut = true;
-        }
     }
 
     private void processLines(List<String> lines) {
@@ -140,7 +115,6 @@ public class Grid {
 
         tiles = new Tile[xTiles][yTiles];
 
-        GlobalVariables.maxPlayerY = lines.size() - (GlobalVariables.ScreenHeight / tileHeight / 2) + 2;
         GlobalVariables.maxYOffset = ((lines.size() + 2) * tileHeight) - GlobalVariables.ScreenHeight;
 
         String line;
@@ -150,7 +124,6 @@ public class Grid {
 
             if (i == 0) {
                 GlobalVariables.maxXOffset = ((line.length() + 2) * tileWidth) - GlobalVariables.ScreenWidth;
-                GlobalVariables.maxPlayerX = line.length();
             }
 
             if (line.contains("OPTIONS")) {
@@ -220,14 +193,17 @@ public class Grid {
                     }
                 }
 
+
+                if(tiles[x][y].getGameObject() instanceof Sprite) {
+                    ((Sprite) tiles[x][y].getGameObject()).SetColorFilter(new PorterDuffColorFilter(Color.rgb(87, 83, 83), PorterDuff.Mode.DST_OVER));
+                }
+
                 x++;
             }
 
             x = 1;
             y++;
         }
-
-        GlobalVariables.maxPlayerX -= (GlobalVariables.ScreenWidth / tileWidth / 2) - 2;
     }
 
     private void initBorderObstacles() {
@@ -252,6 +228,9 @@ public class Grid {
 
     public void Update() {
         moveTilesTime += Time.DeltaTime;
+
+        GlobalVariables.xOffset = -nodomain.boulderdash.utils.Math.Clamp(0, GlobalVariables.maxXOffset, player.getX() * tileWidth - (GlobalVariables.ScreenWidth / 2));
+        GlobalVariables.yOffset = -nodomain.boulderdash.utils.Math.Clamp(0, GlobalVariables.maxYOffset, player.getY() * tileHeight - (GlobalVariables.ScreenHeight / 2));
 
         if (moveTilesTime > 0.16) {
             moveNow = true;
@@ -294,7 +273,7 @@ public class Grid {
                     tiles[x][y].Update();
                 }
 
-                if (moveNow) {
+                if (moveNow && !gameScene.DidPlayerFinish()) {
                     if (y < yTiles - 1) {
                         int newX = x;
                         int newY = y;
@@ -339,7 +318,8 @@ public class Grid {
                                 newY = y + 1;
                             }
 
-                            if (tiles[x][y + 1].getGameObject() instanceof RockTile) {
+                            if (tiles[x][y + 1].getGameObject() instanceof RockTile
+                                    || tiles[x][y + 1].getGameObject() instanceof BrickObstacle) {
 
                                 if (x > 0) {
                                     if ((tiles[x - 1][y + 1].getGameObject() instanceof BlackTile) &&
@@ -472,9 +452,6 @@ public class Grid {
 
                 triedPush = 0;
 
-                if (GlobalVariables.xOffset < 0 && player.getX() < GlobalVariables.maxPlayerX)
-                    GlobalVariables.xOffset += tileWidth;
-
                 movePlayer(player.getX() - 1, player.getY());
 
                 break;
@@ -484,9 +461,6 @@ public class Grid {
                     return;
 
                 triedPush = 0;
-
-                if (GlobalVariables.yOffset < 0 && player.getY() < GlobalVariables.maxPlayerY)
-                    GlobalVariables.yOffset += tileHeight;
 
                 movePlayer(player.getX(), player.getY() - 1);
 
@@ -516,9 +490,6 @@ public class Grid {
 
                 triedPush = 0;
 
-                if (java.lang.Math.abs(GlobalVariables.xOffset) < (GlobalVariables.maxXOffset) && player.getX() > GlobalVariables.minPlayerX)
-                    GlobalVariables.xOffset -= tileWidth;
-
                 movePlayer(player.getX() + 1, player.getY());
 
                 break;
@@ -526,9 +497,6 @@ public class Grid {
             case WALK_DOWN: {
                 if (player.getY() == tiles[0].length - 1 || !tiles[player.getX()][player.getY() + 1].isWalkableByPlayer())
                     return;
-
-                if (java.lang.Math.abs(GlobalVariables.yOffset) < (GlobalVariables.maxYOffset) && player.getY() > GlobalVariables.minPlayerY)
-                    GlobalVariables.yOffset -= tileHeight;
 
                 movePlayer(player.getX(), player.getY() + 1);
 

@@ -60,6 +60,7 @@ public class GameScene extends Scene {
 
     private int lives;
     private int timeoutState;
+    private int currentLevel;
 
     @Override
     protected void Update() {
@@ -101,7 +102,7 @@ public class GameScene extends Scene {
 
         }
 
-            gameTimeText.SetText(String.valueOf(((int) gameTime)));
+        gameTimeText.SetText(String.valueOf(((int) gameTime)));
 
         DiamondTile.currentIndex = Math.Lerp(0, 7, expiredTime);
 
@@ -112,7 +113,7 @@ public class GameScene extends Scene {
 
             if (diedTimer >= 3) {
                 if (lives > 0)
-                    restart();
+                    restart(currentLevel);
                 else
                     SceneManager.getInstance().ForceChangeScene(new MenuScene());
             }
@@ -129,7 +130,13 @@ public class GameScene extends Scene {
             }
 
             if (finishTimer >= 5) {
-                SceneManager.getInstance().ForceChangeScene(new MenuScene());
+                currentLevel++;
+
+                if (currentLevel < 4) {
+                    restart(currentLevel);
+                } else {
+                    SceneManager.getInstance().ForceChangeScene(new MenuScene());
+                }
             }
         }
     }
@@ -163,7 +170,8 @@ public class GameScene extends Scene {
         diamondsCollected = false;
         playerDied = false;
 
-        grid = new Grid(1, 64, 64, this);
+        currentLevel = 1;
+        grid = new Grid(currentLevel, 64, 64, this);
 
         expiredTime = 0;
 
@@ -213,18 +221,24 @@ public class GameScene extends Scene {
         super.Init();
     }
 
-    private void restart() {
-        grid.Restart(1);
-
+    private void restart(int level) {
+        playerFinished = false;
         diamondsCollected = false;
         playerDied = false;
         expiredTime = 0;
+
+        grid.Restart(level);
 
         gameTime = 150;
         gameTimeText.SetText(String.valueOf(((int) gameTime)));
 
         diamonds = 0;
         diamondsText.SetText(String.format(Locale.getDefault(), "%02d", diamonds));
+
+        diamondsToCollectText.SetText(String.format(Locale.getDefault(), "%02d", grid.diamondsToCollect));
+        diamondsBeforeCollectionText.SetText(String.format(Locale.getDefault(), "%02d", grid.diamondsBeforeCollection));
+        diamondsAfterCollectionText.SetText(String.format(Locale.getDefault(), "%02d", grid.diamondsAfterCollection));
+
     }
 
     @Override
@@ -274,5 +288,9 @@ public class GameScene extends Scene {
         Memory.finishedSound.start();
         playerFinished = true;
         finishTimer = 0;
+    }
+
+    public boolean DidPlayerFinish() {
+        return playerFinished;
     }
 }
