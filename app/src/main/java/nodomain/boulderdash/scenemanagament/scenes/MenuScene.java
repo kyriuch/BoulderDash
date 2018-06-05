@@ -18,6 +18,7 @@ import nodomain.boulderdash.utils.Vector2;
 public class MenuScene extends Scene {
 
     private Text text;
+    private Text tapText;
     private double elapsedTime;
 
     private boolean isSwitching;
@@ -35,7 +36,12 @@ public class MenuScene extends Scene {
         text.Move(0, -50f);
         text.SetTextSize(120f);
 
+        tapText = new Text("TAP TO PLAY", Vector2.Center());
+        tapText.Move(0, 40);
+        tapText.SetTextSize(70f);
+
         gameObjects.add(text);
+        gameObjects.add(tapText);
 
         isSwitching = false;
         colorSprite = new ColorSprite(Color.argb(0, 0, 0, 0));

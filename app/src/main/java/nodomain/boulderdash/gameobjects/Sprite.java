@@ -76,12 +76,4 @@ public class Sprite extends GameObject {
         destRect.top = (int) (newPosition.Y);
         destRect.bottom = (int) (newPosition.Y + height);
     }
-
-    public Paint GetPaint() {
-        return paint;
-    }
-
-    public void SetPaint(Paint paint) {
-        this.paint = paint;
-    }
 }
